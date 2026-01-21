@@ -28,14 +28,10 @@ dependencies = [
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
     "scalar-fastapi>=1.6.1",
-]
-
-[project.optional-dependencies]
-# Dependências para usar LLM (opcional)
-llm = [
     "google-generativeai>=0.8.0",
 ]
 
+[project.optional-dependencies]
 # Dependências de desenvolvimento
 dev = [
     "pytest>=8.0.0",
@@ -48,12 +44,12 @@ dev = [
 
 # Todas as dependências
 all = [
-    "healthtech-consultations[llm,dev]",
+    "healthtech-consultations[dev]",
 ]
 
 [project.urls]
-Documentation = "https://github.com/healthtech/consultations-api#readme"
-Repository = "https://github.com/healthtech/consultations-api"
+Documentation = "https://github.com/cesnascimento/Healthtech-Consultations-API#readme"
+Repository = "https://github.com/cesnascimento/Healthtech-Consultations-API"
 
 [build-system]
 requires = ["hatchling"]
