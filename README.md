@@ -60,20 +60,14 @@ pip install uv
 ### 2. Clonar e configurar o projeto
 
 ```bash
+# Clonar o repositório
+git clone https://github.com/cesnascimento/Healthtech-Consultations-API.git
+
 # Navegar até o diretório do projeto
-cd healthtech-consultations
+cd Healthtech-Consultations-API
 
-# Criar ambiente virtual
-uv venv
-
-# Instalar dependências
+# Criar ambiente virtual e instalar dependências
 uv sync
-
-# (Opcional) Instalar com suporte a LLM
-uv sync --extra llm
-
-# (Opcional) Instalar dependências de desenvolvimento
-uv sync --extra dev
 ```
 
 ### 3. Configurar variáveis de ambiente
