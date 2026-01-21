@@ -1,0 +1,79 @@
+# ==============================================
+# Healthtech Consultations API - .dockerignore
+# ==============================================
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info
+.eggs
+*.egg
+
+# Virtual environments
+.venv
+venv
+ENV
+env
+
+# UV
+.uv
+uv.lock
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.nox
+
+# Type checking
+.mypy_cache
+.dmypy.json
+
+# Linting
+.ruff_cache
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker
+
+# Documentation
+*.md
+!README.md
+
+# Tests (não incluir na imagem de produção)
+tests
+
+# Secrets
+*.pem
+*.key
+credentials.json
+secrets.json

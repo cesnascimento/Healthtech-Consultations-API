@@ -1,0 +1,129 @@
+# ==============================================
+# Healthtech Consultations API - Docker Compose
+# ==============================================
+#
+# Uso:
+#   docker-compose up -d          # Inicia em background
+#   docker-compose up             # Inicia com logs
+#   docker-compose down           # Para containers
+#   docker-compose logs -f api    # Acompanha logs
+#   docker-compose build          # Rebuild da imagem
+#
+# Com LLM:
+#   docker-compose --profile llm up -d
+#
+# ==============================================
+
+services:
+  # ----------------------------------------------
+  # API Principal (rule_based apenas)
+  # ----------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_LLM: "false"
+    image: healthtech-consultations:latest
+    container_name: healthtech-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Aplicação
+      - APP_NAME=Healthtech Consultations API
+      - APP_VERSION=1.0.0
+      - DEBUG=false
+      # Summarizer
+      - SUMMARIZER_STRATEGY=rule_based
+      # CORS
+      - CORS_ORIGINS=["*"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - healthtech-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+
+  # ----------------------------------------------
+  # API com LLM habilitado (profile: llm)
+  # ----------------------------------------------
+  api-llm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_LLM: "true"
+    image: healthtech-consultations:llm
+    container_name: healthtech-api-llm
+    restart: unless-stopped
+    profiles:
+      - llm
+    ports:
+      - "8001:8000"
+    environment:
+      # Aplicação
+      - APP_NAME=Healthtech Consultations API (LLM)
+      - APP_VERSION=1.0.0
+      - DEBUG=false
+      # Summarizer com LLM
+      - SUMMARIZER_STRATEGY=llm_based
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=gemini-1.5-flash
+      - LLM_TIMEOUT_SECONDS=10
+      # CORS
+      - CORS_ORIGINS=["*"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - healthtech-network
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+
+  # ----------------------------------------------
+  # Desenvolvimento com hot reload
+  # ----------------------------------------------
+  api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        INSTALL_LLM: "true"
+    image: healthtech-consultations:dev
+    container_name: healthtech-api-dev
+    profiles:
+      - dev
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - SUMMARIZER_STRATEGY=rule_based
+    volumes:
+      - ./app:/app/app:ro
+    networks:
+      - healthtech-network
+
+networks:
+  healthtech-network:
+    driver: bridge
+    name: healthtech-network
