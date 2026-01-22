@@ -9,10 +9,8 @@
 
 FROM python:3.11-slim
 
-# Instala uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Variáveis de ambiente
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
@@ -20,22 +18,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Copia arquivos de dependência
 COPY pyproject.toml ./
 
-# Cria venv e instala dependências (incluindo dev)
 RUN uv venv /app/.venv && \
     . /app/.venv/bin/activate && \
     uv sync --frozen --extra dev
 
-# Adiciona venv ao PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Copia código fonte
 COPY app ./app
 
-# Expõe porta
-EXPOSE 8000
+EXPOSE ${PORT:-8000}
 
-# Comando com hot reload
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-4000} --reload"]
