@@ -9,9 +9,6 @@
 
 FROM python:3.11-slim
 
-# Argumentos de build
-ARG INSTALL_LLM=true
-
 # Instala uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
@@ -29,8 +26,7 @@ COPY pyproject.toml ./
 # Cria venv e instala dependências (incluindo dev)
 RUN uv venv /app/.venv && \
     . /app/.venv/bin/activate && \
-    uv sync --frozen --extra dev && \
-    if [ "$INSTALL_LLM" = "true" ]; then uv sync --frozen --extra llm; fi
+    uv sync --frozen --extra dev
 
 # Adiciona venv ao PATH
 ENV PATH="/app/.venv/bin:$PATH"

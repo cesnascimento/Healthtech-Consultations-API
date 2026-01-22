@@ -9,80 +9,25 @@
 #   docker-compose logs -f api    # Acompanha logs
 #   docker-compose build          # Rebuild da imagem
 #
-# Com LLM:
-#   docker-compose --profile llm up -d
+# Configuração via .env (lido automaticamente)
 #
 # ==============================================
 
 services:
   # ----------------------------------------------
-  # API Principal (rule_based apenas)
+  # API Principal
   # ----------------------------------------------
   api:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        INSTALL_LLM: "false"
     image: healthtech-consultations:latest
     container_name: healthtech-api
     restart: unless-stopped
     ports:
       - "8000:8000"
-    environment:
-      # Aplicação
-      - APP_NAME=Healthtech Consultations API
-      - APP_VERSION=1.0.0
-      - DEBUG=false
-      # Summarizer
-      - SUMMARIZER_STRATEGY=rule_based
-      # CORS
-      - CORS_ORIGINS=["*"]
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - healthtech-network
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 128M
-
-  # ----------------------------------------------
-  # API com LLM habilitado (profile: llm)
-  # ----------------------------------------------
-  api-llm:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        INSTALL_LLM: "true"
-    image: healthtech-consultations:llm
-    container_name: healthtech-api-llm
-    restart: unless-stopped
-    profiles:
-      - llm
-    ports:
-      - "8001:8000"
-    environment:
-      # Aplicação
-      - APP_NAME=Healthtech Consultations API (LLM)
-      - APP_VERSION=1.0.0
-      - DEBUG=false
-      # Summarizer com LLM
-      - SUMMARIZER_STRATEGY=llm_based
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=gemini-1.5-flash
-      - LLM_TIMEOUT_SECONDS=10
-      # CORS
-      - CORS_ORIGINS=["*"]
+    env_file:
+      - .env
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
@@ -107,17 +52,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-      args:
-        INSTALL_LLM: "true"
     image: healthtech-consultations:dev
     container_name: healthtech-api-dev
     profiles:
       - dev
     ports:
       - "8000:8000"
-    environment:
-      - DEBUG=true
-      - SUMMARIZER_STRATEGY=rule_based
+    env_file:
+      - .env
     volumes:
       - ./app:/app/app:ro
     networks:
