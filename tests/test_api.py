@@ -39,7 +39,6 @@ class TestHealthEndpoint:
         response = client.get("/health")
         data = response.json()
 
-        # Estratégia depende do .env (rule_based ou llm_based)
         assert data["summarizer_strategy"] in ["rule_based", "llm_based"]
 
 
@@ -105,16 +104,17 @@ class TestConsultationsEndpoint:
         request_id = data["metadata"]["request_id"]
         uuid.UUID(request_id)
 
-    def test_strategy_used_is_rule_based(
+    def test_strategy_used_matches_config(
         self,
         client: TestClient,
         minimal_consultation_dict: dict[str, Any],
     ) -> None:
+        """Estratégia usada depende da configuração do servidor."""
         response = client.post("/consultations", json=minimal_consultation_dict)
         data = response.json()
 
-        assert data["metadata"]["strategy_used"] == "rule_based"
-        assert data["metadata"]["strategy_requested"] == "rule_based"
+        assert data["metadata"]["strategy_used"] in ["rule_based", "llm_based", "llm_fallback"]
+        assert data["metadata"]["strategy_requested"] is None
 
     def test_sections_have_required_fields(
         self,
@@ -167,6 +167,7 @@ class TestConsultationsEndpoint:
         client: TestClient,
         minimal_consultation_dict: dict[str, Any],
     ) -> None:
+        minimal_consultation_dict["strategy"] = "rule_based"
         response = client.post("/consultations", json=minimal_consultation_dict)
         data = response.json()
 
@@ -177,7 +178,6 @@ class TestConsultationsEndpoint:
         self,
         client: TestClient,
     ) -> None:
-        """Sinais vitais anormais devem gerar warnings."""
         payload = {
             "patient": {
                 "full_name": "Teste Paciente",
@@ -193,6 +193,7 @@ class TestConsultationsEndpoint:
                 "heart_rate": 120,
             },
             "professional_name": "Dr. Teste",
+            "strategy": "rule_based",
         }
 
         response = client.post("/consultations", json=payload)
