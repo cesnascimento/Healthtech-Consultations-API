@@ -45,7 +45,7 @@ class AuditGenerator:
     @staticmethod
     def create_metadata(
         request_id: UUID,
-        strategy_requested: SummarizerStrategy,
+        strategy_requested: SummarizerStrategy | None,
         strategy_used: str,
         processing_start_ns: int,
         llm_model: str | None = None,

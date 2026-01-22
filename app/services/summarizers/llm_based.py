@@ -11,7 +11,7 @@ com auxílio de inteligência artificial.
 - Possui guardrails explícitos
 
 Características:
-- Importação lazy do google-generativeai
+- Importação lazy do google-genai (novo SDK unificado)
 - Timeout configurável
 - Parse defensivo de resposta
 - Filtro de termos diagnósticos
@@ -115,7 +115,9 @@ IMPORTANTE: A seção "assessment" deve conter APENAS um resumo do contexto da c
         self._fallback = fallback
         self._settings = get_settings()
         self._model: Any = None
+        self._client: Any = None
         self._genai_module: Any = None
+        self._types_module: Any = None
         self._warnings: list[ConsultationWarning] = []
 
     def summarize(self, consultation: ConsultationCreate) -> SummarizerResult:
@@ -160,25 +162,18 @@ IMPORTANTE: A seção "assessment" deve conter APENAS um resumo do contexto da c
             return
 
         try:
-            import google.generativeai as genai
+            from google import genai
+            from google.genai import types
 
             self._genai_module = genai
+            self._types_module = types
 
-            genai.configure(api_key=self._settings.GEMINI_API_KEY)
-
-            self._model = genai.GenerativeModel(
-                model_name=self._settings.GEMINI_MODEL,
-                generation_config={
-                    "temperature": 0.1,
-                    "top_p": 0.8,
-                    "top_k": 40,
-                    "max_output_tokens": 4096,
-                },
-            )
+            self._client = genai.Client(api_key=self._settings.GEMINI_API_KEY)
+            self._model = self._settings.GEMINI_MODEL
 
         except ImportError as e:
             raise LLMError(
-                "Biblioteca google-generativeai não instalada",
+                "Biblioteca google-genai não instalada",
                 reason=f"ImportError: {e}",
             )
         except Exception as e:
@@ -205,9 +200,16 @@ IMPORTANTE: A seção "assessment" deve conter APENAS um resumo do contexto da c
         user_prompt = self._build_user_prompt(consultation)
 
         try:
-            response = self._model.generate_content(
-                [self.SYSTEM_PROMPT, user_prompt],
-                request_options={"timeout": self._settings.LLM_TIMEOUT_SECONDS},
+            response = self._client.models.generate_content(
+                model=self._model,
+                contents=[self.SYSTEM_PROMPT, user_prompt],
+                config=self._types_module.GenerateContentConfig(
+                    temperature=0.1,
+                    top_p=0.8,
+                    top_k=40,
+                    max_output_tokens=4096,
+                    http_options={"timeout": self._settings.LLM_TIMEOUT_SECONDS * 1000},
+                ),
             )
 
             if not response or not response.text:

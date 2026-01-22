@@ -399,13 +399,13 @@ class ConsultationCreate(BaseModel):
     # === ESTRATÉGIA DE PROCESSAMENTO ===
 
     strategy: Annotated[
-        SummarizerStrategy,
+        SummarizerStrategy | None,
         Field(
-            default=SummarizerStrategy.RULE_BASED,
+            default=None,
             description=(
                 "Estratégia para geração do resumo clínico. "
-                "\n\n"
-                "**rule_based** (padrão): Processamento determinístico baseado "
+                "Se não informado, usa a configuração do servidor (SUMMARIZER_STRATEGY).\n\n"
+                "**rule_based**: Processamento determinístico baseado "
                 "em regras. Sempre disponível, 100% previsível.\n\n"
                 "**llm_based**: Processamento com auxílio de IA. "
                 "Requer configuração. Fallback automático para rule_based "
@@ -684,9 +684,12 @@ class SummaryMetadata(BaseModel):
     ]
 
     strategy_requested: Annotated[
-        SummarizerStrategy,
+        SummarizerStrategy | None,
         Field(
-            description="Estratégia originalmente solicitada na requisição.",
+            description=(
+                "Estratégia originalmente solicitada na requisição. "
+                "Null indica que foi usada a configuração do servidor."
+            ),
         ),
     ]
 
