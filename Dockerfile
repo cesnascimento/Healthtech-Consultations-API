@@ -7,7 +7,7 @@
 #   docker build -t healthtech-consultations .
 #
 # Run:
-#   docker run --env-file .env -p 8000:8000 healthtech-consultations
+#   docker run --env-file .env -p 4000:4000 healthtech-consultations
 #
 # ==============================================
 
@@ -50,9 +50,9 @@ COPY --from=builder --chown=appuser:appgroup /app/app /app/app
 
 USER appuser
 
-EXPOSE 8000
+EXPOSE ${PORT:-4000}
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-4000}/health')" || exit 1
 
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-4000}"]

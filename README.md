@@ -100,6 +100,9 @@ LLM_TIMEOUT_SECONDS=10
 ### 4. Executar a API
 
 ```bash
+# Desenvolvimento Local com fastapi-cli
+uv run fastapi dev app/main.py
+
 # Desenvolvimento (com hot reload)
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
